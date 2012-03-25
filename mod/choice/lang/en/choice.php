@@ -53,6 +53,7 @@ $string['choice:readresponses'] = 'Read responses';
 $string['choicesaved'] = 'Your choice has been saved';
 $string['choicetext'] = 'Choice text';
 $string['chooseaction'] = 'Choose an action ...';
+$string['closebeforeopen'] = 'Close date cannot be earlier than the open date.';
 $string['limit'] = 'Limit';
 $string['limitanswers'] = 'Limit the number of responses allowed';
 $string['modulename'] = 'Choice';
