@@ -209,7 +209,7 @@ if ($id) {
 
     // Checking is there is a page with this title. If it does not exists, redirect to first page
     if (!$page = wiki_get_page_by_title($subwiki->id, $title)) {
-        $params = array('wid' => $wiki->id, 'gid' => $gid, 'uid' => $uid, 'title' => $wiki->firstpagetitle);
+        $params = array('wid' => $wiki->id, 'group' => $gid, 'uid' => $uid, 'title' => $wiki->firstpagetitle);
         $url = new moodle_url('/mod/wiki/view.php', $params);
         redirect($url);
     }
