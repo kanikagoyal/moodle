@@ -130,6 +130,11 @@ class mod_choice_mod_form extends moodleform_mod {
            $errors['option[0]'] = get_string('atleastoneoption', 'choice');
         }
 
+        if ($data['timeopen'] != 0 && $data['timeclose'] != 0 &&
+                $data['timeclose'] < $data['timeopen']) {
+            $errors['timeclose'] = get_string('closebeforeopen', 'choice');
+        }
+
         return $errors;
     }
 
