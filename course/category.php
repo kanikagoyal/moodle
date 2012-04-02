@@ -135,6 +135,9 @@ if ($editingon && $sesskeyprovided) {
             $DB->set_field('course', 'visible', $visible, array('id' => $course->id));
             // we set the old flag when user manually changes visibility of course
             $DB->set_field('course', 'visibleold', $visible, array('id' => $course->id));
+            // Update the timemodified column
+            $timemodified = time();
+            $DB->set_field('course', 'timemodified', $timemodified, array('id' => $course->id));
         }
     }
 
