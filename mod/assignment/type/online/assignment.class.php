@@ -249,16 +249,17 @@ class assignment_online extends assignment_base {
         $fs = get_file_storage();
         if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $submission->id, "timemodified", false)) {
                 foreach ($files as $file) {
-                        $link = new moodle_url("/mod/assignment/type/online/file.php?id={$this->cm->id}&userid={$submission->userid}");
-                        $action = new popup_action('click', $link, 'file'.$userid, array('height' => 450, 'width' => 580));
-                        $popup = $OUTPUT->action_link($link, shorten_text(trim(strip_tags(format_text($submission->data1,$submission->data2))), 15), $action, array('title'=>get_string('submission', 'assignment')));
-                        $outputplagiarism .= plagiarism_get_links(array('userid'=>$userid, 'file'=>$file, 'cmid'=>$this->cm->id, 'course'=>$this->course, 'assignment'=>$this->assignment));
-                        $output = '<div class="files">'.
-                                  '<img src="'.$OUTPUT->pix_url('f/html') . '" class="icon" alt="html" />'.
-                                  $popup . '<br />' . $outputplagiarism.
-                                  '</div>';
+                    $outputplagiarism .= plagiarism_get_links(array('userid'=>$userid, 'file'=>$file, 'cmid'=>$this->cm->id, 'course'=>$this->course, 'assignment'=>$this->assignment));
                 }
         }
+        $link = new moodle_url("/mod/assignment/type/online/file.php?id={$this->cm->id}&userid={$submission->userid}");
+        $action = new popup_action('click', $link, 'file'.$userid, array('height' => 450, 'width' => 580));
+        $popup = $OUTPUT->action_link($link, shorten_text(trim(strip_tags(format_text($submission->data1,$submission->data2))), 15), $action, array('title'=>get_string('submission', 'assignment')));
+        $output = '<div class="files">'.
+                  '<img src="'.$OUTPUT->pix_url('f/html') . '" class="icon" alt="html" />'.
+                  $popup . '<br />' . $outputplagiarism.
+                  '</div>';
+                        
                   return $output;
     }
 
