@@ -96,6 +96,41 @@ class assignment_online extends assignment_base {
         $this->view_dates();
 
         if ($saved) {
+            
+            // Create the file from online text to send for Plagiarism Detection
+            $fs = get_file_storage();
+            $filename=$this->course->shortname.'-'.$this->assignment->name.'-'.$this->assignment->id.".txt";
+            $fileinfo = array(
+            'contextid' => $this->context->id,
+            'component' => 'mod_assignment',
+            'filearea' => $this->filearea,
+            'itemid' => $submission->id,
+            'filepath' => '/',          
+            'filename' => $filename);                     
+            
+            $file = $fs->get_file($fileinfo['contextid'], $fileinfo['component'], $fileinfo['filearea'], 
+            $fileinfo['itemid'], $fileinfo['filepath'], $fileinfo['filename']);
+ 
+            //Delete the old file if user modifies the text
+            if ($file) {
+                 $file->delete();
+            }
+            
+            $fs->create_file_from_string($fileinfo, trim(strip_tags(format_text($submission->data1,$submission->data2))));
+            $files = $fs->get_area_files($this->context->id, 'mod_assignment', $this->filearea, $submission->id);
+                    
+            // Let Moodle know that assessable files were  uploaded (eg for plagiarism detection)
+            $eventdata = new stdClass();
+            $eventdata->modulename   = 'assignment';
+            $eventdata->cmid         = $this->cm->id;
+            $eventdata->itemid       = $submission->id;
+            $eventdata->courseid     = $this->course->id;
+            $eventdata->userid       = $USER->id;
+            if ($files) {
+                $eventdata->files        = $files;
+            }
+            events_trigger('assessable_file_uploaded', $eventdata);
+        
             echo $OUTPUT->notification(get_string('submissionsaved', 'assignment'), 'notifysuccess');
         }
 
@@ -106,6 +141,14 @@ class assignment_online extends assignment_base {
             } else {
                 echo $OUTPUT->box_start('generalbox boxwidthwide boxaligncenter', 'online');
                 if ($submission && has_capability('mod/assignment:exportownsubmission', $this->context)) {
+                    $fs = get_file_storage();
+                    if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $submission->id, "timemodified", false)) {
+                        foreach ($files as $file) {
+                            $output .= plagiarism_get_links(array('userid'=>$USER->id, 'file'=>$file, 'cmid'=>$this->cm->id, 'course'=>$this->course, 'assignment'=>$this->assignment));
+                            $output .= '<br />';
+                         }
+                    }
+                    echo $output;
                     $text = file_rewrite_pluginfile_urls($submission->data1, 'pluginfile.php', $this->context->id, 'mod_assignment', $this->filearea, $submission->id);
                     echo format_text($text, $submission->data2, array('overflowdiv'=>true));
                     if ($CFG->enableportfolios) {
@@ -203,14 +246,19 @@ class assignment_online extends assignment_base {
             return '';
         }
 
-        $link = new moodle_url("/mod/assignment/type/online/file.php?id={$this->cm->id}&userid={$submission->userid}");
-        $action = new popup_action('click', $link, 'file'.$userid, array('height' => 450, 'width' => 580));
-        $popup = $OUTPUT->action_link($link, shorten_text(trim(strip_tags(format_text($submission->data1,$submission->data2))), 15), $action, array('title'=>get_string('submission', 'assignment')));
-
-        $output = '<div class="files">'.
-                  '<img src="'.$OUTPUT->pix_url('f/html') . '" class="icon" alt="html" />'.
-                  $popup .
-                  '</div>';
+        $fs = get_file_storage();
+        if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $submission->id, "timemodified", false)) {
+                foreach ($files as $file) {
+                        $link = new moodle_url("/mod/assignment/type/online/file.php?id={$this->cm->id}&userid={$submission->userid}");
+                        $action = new popup_action('click', $link, 'file'.$userid, array('height' => 450, 'width' => 580));
+                        $popup = $OUTPUT->action_link($link, shorten_text(trim(strip_tags(format_text($submission->data1,$submission->data2))), 15), $action, array('title'=>get_string('submission', 'assignment')));
+                        $outputplagiarism .= plagiarism_get_links(array('userid'=>$userid, 'file'=>$file, 'cmid'=>$this->cm->id, 'course'=>$this->course, 'assignment'=>$this->assignment));
+                        $output = '<div class="files">'.
+                                  '<img src="'.$OUTPUT->pix_url('f/html') . '" class="icon" alt="html" />'.
+                                  $popup . '<br />' . $outputplagiarism.
+                                  '</div>';
+                }
+        }
                   return $output;
     }
 
@@ -276,6 +324,8 @@ class assignment_online extends assignment_base {
         $mform->addHelpButton('var1', 'commentinline', 'assignment');
         $mform->setDefault('var1', 0);
 
+        $course_context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
+        plagiarism_get_form_elements_module($mform, $course_context);
     }
 
     function portfolio_exportable() {
