@@ -96,6 +96,16 @@ class assignment_online extends assignment_base {
         $this->view_dates();
 
         if ($saved) {
+            // Let Moodle know that an assessable content was uploaded (eg for plagiarism detection)
+            $eventdata = new stdClass();
+            $eventdata->modulename   = 'assignment';
+            $eventdata->cmid         = $this->cm->id;
+            $eventdata->itemid       = $submission->id;
+            $eventdata->courseid     = $this->course->id;
+            $eventdata->userid       = $USER->id;
+            $eventdata->content      = trim(strip_tags(format_text($submission->data1,$submission->data2)));
+            events_trigger('assessable_content_uploaded', $eventdata);
+            
             echo $OUTPUT->notification(get_string('submissionsaved', 'assignment'), 'notifysuccess');
         }
 
@@ -106,6 +116,10 @@ class assignment_online extends assignment_base {
             } else {
                 echo $OUTPUT->box_start('generalbox boxwidthwide boxaligncenter', 'online');
                 if ($submission && has_capability('mod/assignment:exportownsubmission', $this->context)) {
+                    $output  = '';
+                    $output .= plagiarism_get_links(array('userid'=>$USER->id, 'content'=>trim(strip_tags(format_text($submission->data1,$submission->data2))), 'cmid'=>$this->cm->id, 'course'=>$this->course, 'assignment'=>$this->assignment));
+                    $output .= '<br />';
+                    echo $output;
                     $text = file_rewrite_pluginfile_urls($submission->data1, 'pluginfile.php', $this->context->id, 'mod_assignment', $this->filearea, $submission->id);
                     echo format_text($text, $submission->data2, array('overflowdiv'=>true));
                     if ($CFG->enableportfolios) {
@@ -209,7 +223,7 @@ class assignment_online extends assignment_base {
 
         $output = '<div class="files">'.
                   '<img src="'.$OUTPUT->pix_url('f/html') . '" class="icon" alt="html" />'.
-                  $popup .
+                  $popup . plagiarism_get_links(array('userid'=>$userid, 'content'=>trim(strip_tags(format_text($submission->data1,$submission->data2))), 'cmid'=>$this->cm->id, 'course'=>$this->course, 'assignment'=>$this->assignment)) .
                   '</div>';
                   return $output;
     }
@@ -276,6 +290,8 @@ class assignment_online extends assignment_base {
         $mform->addHelpButton('var1', 'commentinline', 'assignment');
         $mform->setDefault('var1', 0);
 
+        $course_context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
+        plagiarism_get_form_elements_module($mform, $course_context);
     }
 
     function portfolio_exportable() {
