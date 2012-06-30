@@ -4019,6 +4019,11 @@ function forum_print_attachments($post, $cm, $type) {
                     $output .= '<br />';
                 }
             }
+            if ($CFG->enableplagiarism) {
+                require_once($CFG->libdir.'/plagiarismlib.php');
+                $output .= plagiarism_get_links(array('userid'=>$post->userid, 'file'=>$file, 'cmid'=>$cm->id, 'course'=>$post->course, 'forum'=>$post->forum));
+                $output .= '<br />';
+            }
         }
     }
 
@@ -4233,6 +4238,21 @@ function forum_add_attachment($post, $forum, $cm, $mform=null, &$message=null) {
     file_save_draft_area_files($post->attachments, $context->id, 'mod_forum', 'attachment', $post->id);
 
     $DB->set_field('forum_posts', 'attachment', $present, array('id'=>$post->id));
+
+    $fs = get_file_storage();
+    $files = $fs->get_area_files($context->id, 'mod_forum', 'attachment', $post->id, "timemodified", false);
+    // Let Moodle know that an assessable content was uploaded (eg for plagiarism detection)
+    $eventdata = new stdClass();
+    $eventdata->modulename   = 'forum';
+    $eventdata->cmid         = $cm->id;
+    $eventdata->itemid       = $post->itemid;
+    $eventdata->courseid     = $post->course;
+    $eventdata->userid       = $post->userid;
+    if ($files) {
+        $eventdata->files        = $files; // This is depreceated - please use pathnamehashes instead!
+    }
+    $eventdata->pathnamehashes = array_keys($files);
+    events_trigger('assessable_file_uploaded', $eventdata);
 
     return true;
 }
