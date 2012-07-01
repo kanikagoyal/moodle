@@ -207,6 +207,22 @@ if ($edit) {
         }
         // store the updated values or re-save the new submission (re-saving needed because URLs are now rewritten)
         $DB->update_record('workshop_submissions', $formdata);
+        // send files to event system
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id);
+        $eventdata = new stdClass();
+        $eventdata->modulename   = 'workshop';
+        $eventdata->cmid         = $cm->id;
+        $eventdata->itemid       = $submission->id;
+        $eventdata->courseid     = $course->id;
+        $eventdata->userid       = $USER->id;
+        $eventdata->content      = $formdata->content;
+        if ($files) {
+            $eventdata->files        = $files; // This is depreceated - please use pathnamehashes instead!
+        }
+        $eventdata->pathnamehashes = array_keys($files);
+        events_trigger('assessable_file_uploaded', $eventdata);
+        events_trigger('assessable_content_uploaded', $eventdata);
         redirect($workshop->submission_url($formdata->id));
     }
 }
@@ -265,6 +281,10 @@ if (trim($workshop->instructauthors)) {
 // if in edit mode, display the form to edit the submission
 
 if ($edit) {
+    if ($CFG->enableplagiarism) {
+        require_once($CFG->libdir.'/plagiarismlib.php');
+        echo plagiarism_print_disclosure($cm->id);
+    }
     $mform->display();
     echo $output->footer();
     die();
@@ -277,6 +297,10 @@ if ($submission->id) {
         $showauthor = has_capability('mod/workshop:viewauthorpublished', $workshop->context);
     } else {
         $showauthor = has_capability('mod/workshop:viewauthornames', $workshop->context);
+    }
+    if ($CFG->enableplagiarism) {
+        require_once($CFG->libdir.'/plagiarismlib.php');
+        $submission->content .= plagiarism_get_links(array('userid'=>$submission->authoridx, 'content'=>$submission->content, 'cmid'=>$cm->id, 'course'=>$course, 'workshop'=>$workshop->id));
     }
     echo $output->render($workshop->prepare_submission($submission, $showauthor));
 } else {

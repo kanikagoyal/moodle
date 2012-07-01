@@ -767,6 +767,10 @@ class mod_workshop_renderer extends plugin_renderer_base {
             } else if ($format == 'text') {
                 $outputfiles .= $linktxt . PHP_EOL;
             }
+            if ($CFG->enableplagiarism) {
+            require_once($CFG->libdir.'/plagiarismlib.php');
+            $outputfiles .= plagiarism_get_links(array('userid'=>$file->get_userid(), 'file'=>$file, 'cmid'=>$this->page->cm->id, 'course'=>$this->page->course->id, 'workshop'=>$submissionid));
+            }
         }
 
         if ($format == 'html') {
