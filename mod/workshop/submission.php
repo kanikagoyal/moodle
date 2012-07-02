@@ -217,9 +217,6 @@ if ($edit) {
         $eventdata->courseid     = $course->id;
         $eventdata->userid       = $USER->id;
         $eventdata->content      = $formdata->content;
-        if ($files) {
-            $eventdata->files        = $files; // This is depreceated - please use pathnamehashes instead!
-        }
         $eventdata->pathnamehashes = array_keys($files);
         events_trigger('assessable_file_uploaded', $eventdata);
         events_trigger('assessable_content_uploaded', $eventdata);
