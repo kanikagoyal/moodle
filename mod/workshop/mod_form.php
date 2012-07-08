@@ -197,8 +197,8 @@ class mod_workshop_mod_form extends moodleform_mod {
         $mform->addElement('date_time_selector', 'assessmentend', $label, array('optional' => true));
         $mform->setAdvanced('assessmentend');
 
-        $course_context = context_course::instance($this->course->id);
-        plagiarism_get_form_elements_module($mform, $course_context);
+        $coursecontext = context_course::instance($this->course->id);
+        plagiarism_get_form_elements_module($mform, $coursecontext);
 
         // Common module settings, Restrict availability, Activity completion etc. ----
         $features = array('groups'=>true, 'groupings'=>true, 'groupmembersonly'=>true,
