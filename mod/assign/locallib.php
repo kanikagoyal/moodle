@@ -2494,7 +2494,6 @@ class assign {
      */
     private function process_submit_for_grading() {
         global $USER;
-
         // Need submit permission to submit an assignment
         require_capability('mod/assign:submit', $this->context);
         require_sesskey();
@@ -2512,6 +2511,14 @@ class assign {
             $this->add_to_log('submit for grading', $this->format_submission_for_log($submission));
             $this->notify_graders($submission);
             $this->notify_student_submission_receipt($submission);
+			// Trigger assessable_content_done event to show files are complete
+			$eventdata = new stdClass();
+			$eventdata->modulename   = 'assign';
+			$eventdata->cmid         = $this->get_course_module()->id;
+			$eventdata->itemid       = $submission->id;
+			$eventdata->courseid     = $this->get_course()->id;
+			$eventdata->userid       = $USER->id;
+			events_trigger('assessable_files_done', $eventdata);
         }
     }
 

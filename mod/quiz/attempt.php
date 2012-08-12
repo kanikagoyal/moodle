@@ -42,7 +42,6 @@ $page = optional_param('page', 0, PARAM_INT);
 
 $attemptobj = quiz_attempt::create($attemptid);
 $PAGE->set_url($attemptobj->attempt_url(null, $page));
-
 // Check login.
 require_login($attemptobj->get_course(), false, $attemptobj->get_cm());
 

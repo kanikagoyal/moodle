@@ -1297,7 +1297,7 @@ class quiz_attempt {
      */
     public function process_submitted_actions($timestamp, $becomingoverdue = false) {
         global $DB;
-
+		echo "yo";
         $transaction = $DB->start_delegated_transaction();
 
         $this->quba->process_all_actions($timestamp);
@@ -1332,7 +1332,7 @@ class quiz_attempt {
     }
 
     public function process_finish($timestamp, $processsubmitted) {
-        global $DB;
+        global $DB,$CFG;
 
         $transaction = $DB->start_delegated_transaction();
 
@@ -1360,6 +1360,9 @@ class quiz_attempt {
         }
 
         $transaction->allow_commit();
+					 if (!empty($CFG->enableplagiarism)) {
+			$this->fire_state_transition_event('assessable_quiz_submitted', $timestamp);
+			}
     }
 
     /**
@@ -1405,7 +1408,7 @@ class quiz_attempt {
      */
     protected function fire_state_transition_event($event, $timestamp) {
         global $USER;
-
+		
         // Trigger event.
         $eventdata = new stdClass();
         $eventdata->component   = 'mod_quiz';
