@@ -109,7 +109,7 @@ class mod_quiz_mod_form extends moodleform_mod {
         $mform->setDefault('graceperiod', $quizconfig->graceperiod);
         $mform->disabledIf('graceperiod', 'overduehandling', 'neq', 'graceperiod');
 		$coursecontext = context_course::instance($COURSE->id);
-        plagiarism_get_form_elements_module($mform, $coursecontext);
+        plagiarism_get_form_elements_module($mform, $coursecontext, 'mod_quiz');
         // -------------------------------------------------------------------------------
         // Grade settings.
         $this->standard_grading_coursemodule_elements();

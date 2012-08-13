@@ -1358,11 +1358,8 @@ class quiz_attempt {
             // Tell any access rules that care that the attempt is over.
             $this->get_access_manager($timestamp)->current_attempt_finished();
         }
-
+        $this->fire_state_transition_event('assessable_quiz_submitted', $timestamp);
         $transaction->allow_commit();
-					 if (!empty($CFG->enableplagiarism)) {
-			$this->fire_state_transition_event('assessable_quiz_submitted', $timestamp);
-			}
     }
 
     /**

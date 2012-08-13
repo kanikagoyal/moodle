@@ -103,7 +103,7 @@ function plagiarism_save_form_elements($data) {
  * @param object $mform - Moodle form object
  * @param object $context - context object
  */
-function plagiarism_get_form_elements_module($mform, $context) {
+function plagiarism_get_form_elements_module($mform, $context, $modulename) {
     global $CFG;
     if (empty($CFG->enableplagiarism)) {
         return '';
@@ -113,7 +113,7 @@ function plagiarism_get_form_elements_module($mform, $context) {
         require_once($dir.'/lib.php');
         $plagiarismclass = "plagiarism_plugin_$plugin";
         $plagiarismplugin = new $plagiarismclass;
-        $plagiarismplugin->get_form_elements_module($mform, $context);
+        $plagiarismplugin->get_form_elements_module($mform, $context, $modulename);
     }
 }
 /**
