@@ -1369,6 +1369,7 @@ class quiz_attempt {
             $this->get_access_manager($timestamp)->current_attempt_finished();
         }
 
+        $this->fire_state_transition_event('assessable_quiz_submitted', $timestamp);
         $transaction->allow_commit();
     }
 

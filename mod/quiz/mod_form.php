@@ -316,6 +316,8 @@ class mod_quiz_mod_form extends moodleform_mod {
         $mform->setAdvanced('browsersecurity', $quizconfig->browsersecurity_adv);
         $mform->setDefault('browsersecurity', $quizconfig->browsersecurity);
 
+        $coursecontext = context_course::instance($COURSE->id);
+        plagiarism_get_form_elements_module($mform, $coursecontext, 'mod_quiz');
         // Any other rule plugins.
         quiz_access_manager::add_settings_form_fields($this, $mform);
 
